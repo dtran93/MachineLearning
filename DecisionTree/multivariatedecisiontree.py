@@ -37,7 +37,7 @@ def getConditionalEntropy(data, ageThresh, incomeThresh):
 	global alpha
 	global beta
 	for i in range(len(data)):
-		if alpha * data[i][0] + beta * data[i][1] - 1 < alpha * ageThresh + beta * incomeThresh - 1:
+		if alpha * data[i][0] + beta * data[i][1] - 1 < 0:
 			# print "here"
 			totalLower += 1
 			if data[i][yValueIndex] == "Yes":
@@ -100,7 +100,7 @@ def filterDataBasedOnSplit(data, bestAgeThresh, bestIncomeThresh):
 	dataNewHigher = []
 	dataNewLower = []
 	for i in range(len(data)):
-		if alpha * data[i][0] + beta * data[i][1] - 1 < alpha * bestAgeThresh + beta * bestIncomeThresh - 1:
+		if alpha * data[i][0] + beta * data[i][1] - 1 < 0:
 			dataNewLower.append(data[i])
 		else:
 			dataNewHigher.append(data[i])
