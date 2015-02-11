@@ -19,7 +19,7 @@ def main():
     wo = 0
     eta = 0.1
     lamb = 0.3
-    
+
     print len(Y_train)
     print len(X_train)
 
@@ -29,18 +29,20 @@ def main():
     	# wo <= wo + func
     	wo = wo - eta * (-1 / lenData * 1)# matrix stuff
     	X_T = tranpose(X_Matrix)
-    	YJMP = getYJMinusP(X_T, W_Matrix)
+    	YJMP = getYJMinusP(X_T, W_Matrix, wo)
     	WUpdateXY = (X_T * (Y_Matrix - YJMP)) / featureLen
     	# update each element in matrix??????
     	W_Matrix = W_Matrix - eta (lamb * W_Matrix - WUpdateXY)
 
-def getYJMinusP(X_T, W_Matrix):
+def getYJMinusP(X_T, W_Matrix, wo):
 	AllWDotX = W_Matrix * X_T
-	PYOne = []
-	for (i in range(len(AllWDotX))):
-		WXi = AllWDotX.item(i)
-		PYOne.append(exp(w0 + WXi) / (1 + exp(w0 + WXi)))
-	return PYOne
+	tempSave = exp(wo + AllWDotX)
+	return tempSave / (1 + tempSave)
+	# PYOne = []
+	# for (i in range(len(AllWDotX))):
+	# 	WXi = AllWDotX.item(i)
+	# 	PYOne.append(exp(w0 + WXi) / (1 + exp(w0 + WXi)))
+	# return matrix(PYOne)
 
 if __name__ == '__main__':
     main()
