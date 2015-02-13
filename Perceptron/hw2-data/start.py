@@ -24,84 +24,122 @@ def main():
 
     YiNeg = [-1] * featureLen
     YiPos = [1] * featureLen
-    
-    for t in range(5000):
+	
+    Wo250 = 0.0
+    W250 = W_Matrix
+    Wo500 = 0.0
+    W500 = W_Matrix
+    Wo100 = 0.0
+    W1000 = W_Matrix
+    # t = 250, 500, 1000
+    for t in range(1000):
         countCorrect = 0
-	for i in range(lenData):
+	for i in range(lenData - 1000):
 		Y = sign(W_Matrix, X_train[i], wo)
 		if Y != Y_train[i]:
 			if Y_train[i] == 1:
-				W_Matrix = W_Matrix + YiXi(YiPos, X_train[i])
+				W_Matrix = W_Matrix + matrix(X_train[i])
 				wo = wo + Y_train[i]
 			else:
-				W_Matrix = W_Matrix + YiXi(YiNeg, X_train[i])			
+				W_Matrix = W_Matrix + (-1 * matrix(X_train[i]))			
 				wo = wo + (-1)
 		else:
 			countCorrect += 1
-	print "t: ",
 	print t,
-	print "correct: ",
-	print countCorrect
+	print "\t",
+        print countCorrect
+        if t == 249:
+		Wo250 = wo
+		W250 = W_Matrix
+        if t == 499:
+		Wo500 = wo
+		W500 = W_Matrix
+        if t == 999:
+		Wo1000 = wo
+		W1000 = W_Matrix
+    print W250
+    print W500
+    print W1000
+    # validate with W250
+    countCorrect = 0.0
+    for i in range(lenData - 1000, lenData):
+	Y = sign(W250, X_train[i], Wo250)
+	if Y == Y_train[i]:
+		countCorrect += 1
+    print countCorrect
+    # validate with W500
+    countCorrect = 0.0
+    for i in range(lenData - 1000, lenData):
+	Y = sign(W500, X_train[i], Wo500)
+	if Y == Y_train[i]:
+		countCorrect += 1
+    print countCorrect
+    # validate with W1000
+    countCorrect = 0.0
+    for i in range(lenData - 1000, lenData):
+	Y = sign(W1000, X_train[i], Wo1000)
+	if Y == Y_train[i]:
+		countCorrect += 1  
+    print countCorrect
+    
+    print "LLNorm 250: ",
+    print getLLNorm(W250)
+    print "LLNorm 500: ",
+    print getLLNorm(W500)
+    print "LLNorm 1000: ",
+    print getLLNorm(W1000)
 
-
-def sign(W_T, X_T, wo):
-	X_Matrix = transpose(matrix(X_T))
-	if (W_T * X_Matrix).item(0) + wo > 0:
-		return 1
-	else:
-		return 0
-
-# returns Xi * constant Yi
-def YiXi(Yi, Xi):
-	return dot(Yi, Xi)
-
-# from slides
-def getLogLoss(lamb, W_Matrix, X_T, W_T, wo, lenData, Y_Matrix):
-	return lamb * 0.5 * transpose(W_Matrix)* W_Matrix - 1.0 / lenData * getLW(Y_Matrix, W_T, X_T, wo, lenData)
-
-# helper
-def getLW(Y_Matrix, W_T, X_T, wo, lenData):
-	return Y_Matrix * transpose(wo + W_T * X_T) - sum(log(1 + exp(wo + W_T * X_T)))
-
-# computes for all data points j, Yj - P(Yj = 1 | X,Wo,W)
-# tested
-def getYJMinusP(X_T, W_T, Y_Matrix, wo):
-	AllWDotX = W_T * X_T
-	tempSave = exp(wo + AllWDotX)
-	return Y_Matrix - tempSave / (1 + tempSave)
-	
-def getCTRCorrects(X_T, W_T, Y_test, wo):
-	AllWDotX = W_T * X_T
-	tempSave = exp(wo + AllWDotX)
-	probs = tempSave / (1 + tempSave)
-	count = 0.0
+    # LLNorm 500 wins
+    # test set with t = 500
+    W_Matrix = matrix(Weights)
+    wo = 0
+    for t in range(500):
+        countCorrect = 0
 	for i in range(len(Y_test)):
-		if round(probs.item(i)) == Y_test[i]:
-			count += 1
-	return count / len(Y_test)
+		Y = sign(W_Matrix, X_test[i], wo)
+		if Y != Y_test[i]:
+			if Y_test[i] == 1:
+				W_Matrix = W_Matrix + matrix(X_test[i])
+				wo = wo + Y_train[i]
+			else:
+				W_Matrix = W_Matrix + (-1 * matrix(X_test[i]))			
+				wo = wo + (-1)
+		else:
+			countCorrect += 1
+	print t,
+	print "\t",
+        print countCorrect
+    print W_Matrix
+    answers = recallPrec(X_test, W_Matrix, wo, Y_test)
+    print "Recall1: ",
+    print answers[0]
+    print "Precision1: ", 
+    print answers[1]
+    print "Recall0: ",
+    print answers[2]
+    print "Precision0: ", 
+    print answers[3]
 
-def recallPrecision(X_T, W_T, Y_test, wo):
-	AllWDotX = W_T * X_T
-	tempSave = exp(wo + AllWDotX)
-	probs = tempSave / (1 + tempSave)
+def recallPrec(X_test, W_Matrix, wo, Y_test): 
 	countCorrect1 = 0.0
-        countY1 = 0.0
+	countY1 = 0.0
 	countYIdent1 = 0.0
 	countCorrect0 = 0.0
-        countY0 = 0.0
-	countYIdent0 = 0.0
-	for i in range(len(Y_test)):
+	countY0 = 0.0
+	countYIdent0 = 0.0   
+    	for i in range(len(Y_test)):
+		Y = sign(W_Matrix, X_test[i], wo)
 		if Y_test[i] == 1:
 			countY1 += 1
-		if round(probs.item(i)) == Y_test[i] and Y_test[i] == 1.0:
+		if Y == Y_test[i] and Y_test[i] == 1.0:
 			countCorrect1 += 1
-		if round(probs.item(i)) == 1:
+		if Y == 1:
 			countYIdent1 += 1
 		if Y_test[i] == 0:
 			countY0 += 1
-		if round(probs.item(i)) == Y_test[i] and Y_test[i] == 0.0:
+		if Y == Y_test[i] and Y_test[i] == 0.0:
 			countCorrect0 += 1
-		if round(probs.item(i)) == 0:
+		if Y == 0:
 			countYIdent0 += 1
 	answer = [0,0,0,0]
 	if countY1 == 0:
@@ -120,10 +158,18 @@ def recallPrecision(X_T, W_T, Y_test, wo):
 		answer[3] = 0
 	else:
 		answer[3] = countCorrect0 / countYIdent0
-	return answer
+	return answer	
+		
+
+def sign(W_T, X_T, wo):
+	X_Matrix = transpose(matrix(X_T))
+	if (W_T * X_Matrix).item(0) + wo > 0:
+		return 1
+	else:
+		return 0
 
 def getLLNorm(W_Matrix):
-	return transpose(W_Matrix) * W_Matrix
+	return W_Matrix * transpose(W_Matrix)
 
 
 
