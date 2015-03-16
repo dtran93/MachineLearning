@@ -8,9 +8,11 @@ var timeout = 1000;
 var stop_timer = null;
 var stop_timeout = 10000;
 var clientSocket = dgram.createSocket('udp4');
+// make ctrl-d work
+process.stdin.resume();
 
 if (process.argv.length != 5) {
-  console.log(process.argv.length);
+  // console.log(process.argv.length);
   console.log("Usage: node file.txt port time");
   process.exit(1);
 }
@@ -64,10 +66,10 @@ function stopTimer() {
 	if (stop_timer == null) {
 		stop_timer = setTimeout(function() { 
 			if (confirm) {
-				console.log("Time: " + self_time);
+				console.log(self_time);
 				process.exit(0);
 			} else {
-				console.log(confirm);
+				// console.log(confirm);
 				process.exit(0);
 			}
 		}, stop_timeout);
@@ -122,3 +124,9 @@ function generateHeader(Time) {
   message.write(allHead, 0, allHead.length, 'utf8');
   return message;
 }
+
+// ctrl-d 
+process.stdin.on('end', function() {
+	// console.log("here");
+	process.exit(1);
+});
