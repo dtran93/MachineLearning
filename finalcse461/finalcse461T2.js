@@ -47,6 +47,11 @@ clientSocket.on('message', function(message,remote) {
 		}
 		confirm = true;
 		self_time = time_temp;
+    // times not equal reset timer
+	} else if (parseInt(time_temp) != parseInt(self_time)) {
+		clearTimeout(stop_timer);
+		stop_timer = null;
+		stopTimer();
 	}
 });
 
